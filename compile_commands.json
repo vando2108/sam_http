@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DGFLAGS_DLL_DECLARE_FLAG=\"\" -DGFLAGS_DLL_DEFINE_FLAG=\"\" -DGLOG_USE_GLOG_EXPORT=\"\" -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/http -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/socket -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/event -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/data_structure -isystem /Users/kdimo2108/.conan2/p/b/glog6a94b306568a0/p/include -isystem /Users/kdimo2108/.conan2/p/b/gflagac2a0f8daeec0/p/include -stdlib=libc++ -O3 -DNDEBUG -std=c++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fsanitize=address -o CMakeFiles/sam_http.dir/src/main.cpp.o -c /Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/main.cpp",
+  "file": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/main.cpp",
+  "output": "CMakeFiles/sam_http.dir/src/main.cpp.o"
+},
+{
+  "directory": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DGFLAGS_DLL_DECLARE_FLAG=\"\" -DGFLAGS_DLL_DEFINE_FLAG=\"\" -DGLOG_USE_GLOG_EXPORT=\"\" -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/http -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/socket -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/event -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/data_structure -isystem /Users/kdimo2108/.conan2/p/b/glog6a94b306568a0/p/include -isystem /Users/kdimo2108/.conan2/p/b/gflagac2a0f8daeec0/p/include -stdlib=libc++ -O3 -DNDEBUG -std=c++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fsanitize=address -o CMakeFiles/sam_http.dir/src/http/http_server.cpp.o -c /Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/http/http_server.cpp",
+  "file": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/http/http_server.cpp",
+  "output": "CMakeFiles/sam_http.dir/src/http/http_server.cpp.o"
+},
+{
+  "directory": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DGFLAGS_DLL_DECLARE_FLAG=\"\" -DGFLAGS_DLL_DEFINE_FLAG=\"\" -DGLOG_USE_GLOG_EXPORT=\"\" -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/http -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/socket -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/event -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/data_structure -isystem /Users/kdimo2108/.conan2/p/b/glog6a94b306568a0/p/include -isystem /Users/kdimo2108/.conan2/p/b/gflagac2a0f8daeec0/p/include -stdlib=libc++ -O3 -DNDEBUG -std=c++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fsanitize=address -o CMakeFiles/sam_http.dir/src/socket/helper.cpp.o -c /Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/socket/helper.cpp",
+  "file": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/socket/helper.cpp",
+  "output": "CMakeFiles/sam_http.dir/src/socket/helper.cpp.o"
+},
+{
+  "directory": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DGFLAGS_DLL_DECLARE_FLAG=\"\" -DGFLAGS_DLL_DEFINE_FLAG=\"\" -DGLOG_USE_GLOG_EXPORT=\"\" -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/http -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/socket -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/event -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/data_structure -isystem /Users/kdimo2108/.conan2/p/b/glog6a94b306568a0/p/include -isystem /Users/kdimo2108/.conan2/p/b/gflagac2a0f8daeec0/p/include -stdlib=libc++ -O3 -DNDEBUG -std=c++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fsanitize=address -o CMakeFiles/sam_http.dir/src/socket/server_stream.cpp.o -c /Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/socket/server_stream.cpp",
+  "file": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/socket/server_stream.cpp",
+  "output": "CMakeFiles/sam_http.dir/src/socket/server_stream.cpp.o"
+},
+{
+  "directory": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http",
+  "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DGFLAGS_DLL_DECLARE_FLAG=\"\" -DGFLAGS_DLL_DEFINE_FLAG=\"\" -DGLOG_USE_GLOG_EXPORT=\"\" -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/http -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/socket -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/event -I/Users/kdimo2108/Workspace/PersonalProjects/sam_http/include/data_structure -isystem /Users/kdimo2108/.conan2/p/b/glog6a94b306568a0/p/include -isystem /Users/kdimo2108/.conan2/p/b/gflagac2a0f8daeec0/p/include -stdlib=libc++ -O3 -DNDEBUG -std=c++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fsanitize=address -o CMakeFiles/sam_http.dir/src/data_structure/scsp_lockfree_queue.cpp.o -c /Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/data_structure/scsp_lockfree_queue.cpp",
+  "file": "/Users/kdimo2108/Workspace/PersonalProjects/sam_http/src/data_structure/scsp_lockfree_queue.cpp",
+  "output": "CMakeFiles/sam_http.dir/src/data_structure/scsp_lockfree_queue.cpp.o"
+}
+]
