@@ -9,6 +9,13 @@ set (CMAKE_TOOLCHAIN_FILE ./build/conan_toolchain.cmake)
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 
+# Check if the compiler is GCC or Clang
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    # Enable ThreadSanitizer
+    target_compile_options(YourExecutableName PRIVATE -fsanitize=thread -g)
+    target_link_libraries(YourExecutableName PRIVATE -fsanitize=thread)
+endif()
+
 project(sam_http VERSION 0.1)
 
 # FIND PACKAGE
@@ -32,7 +39,10 @@ file(GLOB EVENT_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/event/*.cpp)
 
 # DATA_STRUCTURE SOURCE FILES
 file(GLOB DATA_STRUCTURE_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/data_structure/*.hpp)
-file(GLOB DATA_STRUCTURE_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/data_structure/*.cpp)
+
+#UTILS
+file(GLOB UTILS_HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/utils/*.hpp)
+file(GLOB UTILS_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/*.cpp)
 
 # Include directories
 include_directories(
@@ -52,7 +62,8 @@ add_executable(${PROJECT_NAME}
     ${EVENT_SOURCE_FILES}
     ${EVENT_HEADER_FILES}
     ${DATA_STRUCTURE_SOURCE_FILES}
-    ${DATA_STRUCTURE_HEADER_FILES}
+    ${UTILS_SOURCE_FILES}
+    ${UTILS_HEADER_FILES}
 )
 
 # LINK
