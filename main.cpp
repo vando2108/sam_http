@@ -9,10 +9,10 @@
 #include <cstring>
 #include <thread>  // NOLINT
 
-#include "../include/data_structure/scsp_lockfree_queue.hpp"
-#include "../include/http/http_server.hpp"
-#include "../include/socket/stream.hpp"
-#include "../include/utils/time.hpp"
+#include "./include/data_structure/scsp_mutex_queue.hpp"
+#include "./include/http/http_server.hpp"
+#include "./include/socket/stream.hpp"
+#include "./include/utils/time.hpp"
 
 const int PORT = 3000;
 const int BACKLOG = 10;
@@ -23,7 +23,7 @@ void testScspLockFreeQueue() {
   const int num_threads = 1;
   const int num_elements = 10;
 
-  sam::data_structure::ScspLockFreeQueue<int> mt_queue(num_elements * num_threads);
+  sam::data_structure::ScspMutexQueue<int> mt_queue(num_elements * num_threads);
 
   LOG(INFO) << "timestamp: " << sam::utils::now();
   auto producer = [&mt_queue](int start) {
@@ -41,6 +41,7 @@ void testScspLockFreeQueue() {
     for (int i = 0; i < num_elements; ++i) {
       while (!mt_queue.pop(&value)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % 1000));
+        LOG(INFO) << "pop false";
       }
       LOG(INFO) << "poped: " << value;
       results.push_back(value);
