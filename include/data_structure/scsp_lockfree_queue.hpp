@@ -24,8 +24,15 @@ class ScspLockFreeQueue : private Alloc {
   std::size_t capacity_;
   T* ring_;
   static_assert(std::atomic<std::size_t>::is_always_lock_free);
+
+  // push_cursor
   alignas(hardware_constructive_interference_size) std::atomic<std::size_t> push_cursor_{0};
+  alignas(hardware_constructive_interference_size) std::size_t cached_push_cursor_{0};
+
+  // pop cursor
   alignas(hardware_constructive_interference_size) std::atomic<std::size_t> pop_cursor_{0};
+  alignas(hardware_constructive_interference_size) std::size_t cached_pop_cursor_{0};
+
   char padding_[hardware_constructive_interference_size - sizeof(std::size_t)];
 
  public:
@@ -61,9 +68,11 @@ class ScspLockFreeQueue : private Alloc {
 template <typename T, typename Alloc>
 bool ScspLockFreeQueue<T, Alloc>::push(T const& value) {
   auto push_cursor = push_cursor_.load(std::memory_order_relaxed);
-  auto pop_cursor = pop_cursor_.load(std::memory_order_acquire);
-  if (full(push_cursor, pop_cursor)) {
-    return false;
+  if (full(push_cursor, cached_pop_cursor_)) {
+    cached_pop_cursor_ = pop_cursor_.load(std::memory_order_acquire);
+    if (full(push_cursor, cached_pop_cursor_)) {
+      return false;
+    }
   }
 
   new (element(push_cursor)) T(value);
@@ -74,10 +83,12 @@ bool ScspLockFreeQueue<T, Alloc>::push(T const& value) {
 
 template <typename T, typename Alloc>
 bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {  // NOLINT
-  auto push_cursor = push_cursor_.load(std::memory_order_acquire);
   auto pop_cursor = pop_cursor_.load(std::memory_order_relaxed);
-  if (empty(push_cursor, pop_cursor)) {
-    return false;
+  if (empty(cached_push_cursor_, pop_cursor)) {
+    cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
+    if (empty(cached_push_cursor_, pop_cursor)) {
+      return false;
+    }
   }
 
   value = *element(pop_cursor);

@@ -37,5 +37,5 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} glog::glog)
 
 message("6. Add add_subdirectory")
-# add_subdirectory(test)
+add_subdirectory(test)
 add_subdirectory(benchmark)

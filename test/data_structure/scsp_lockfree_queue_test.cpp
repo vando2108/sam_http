@@ -11,8 +11,8 @@
 TEST(ScspLockFreeQueueTest, BasicOperations) {
   sam::data_structure::ScspLockFreeQueue<int> queue(5);
 
-  EXPECT_TRUE(queue.empty());
-  EXPECT_FALSE(queue.full());
+  int value;
+  EXPECT_FALSE(queue.pop(value));
 
   EXPECT_TRUE(queue.push(1));
   EXPECT_TRUE(queue.push(2));
@@ -21,18 +21,17 @@ TEST(ScspLockFreeQueueTest, BasicOperations) {
   EXPECT_TRUE(queue.push(5));
   EXPECT_FALSE(queue.push(6));  // Queue should be full now
 
-  int value;
-  EXPECT_TRUE(queue.pop(&value));
+  EXPECT_TRUE(queue.pop(value));
   EXPECT_EQ(value, 1);
-  EXPECT_TRUE(queue.pop(&value));
+  EXPECT_TRUE(queue.pop(value));
   EXPECT_EQ(value, 2);
-  EXPECT_TRUE(queue.pop(&value));
+  EXPECT_TRUE(queue.pop(value));
   EXPECT_EQ(value, 3);
-  EXPECT_TRUE(queue.pop(&value));
+  EXPECT_TRUE(queue.pop(value));
   EXPECT_EQ(value, 4);
-  EXPECT_TRUE(queue.pop(&value));
+  EXPECT_TRUE(queue.pop(value));
   EXPECT_EQ(value, 5);
-  EXPECT_FALSE(queue.pop(&value));  // Queue should be empty now
+  EXPECT_FALSE(queue.pop(value));  // Queue should be empty now
 }
 
 TEST(ScspLockFreeQueueTest, MultiThread) {
@@ -53,7 +52,7 @@ TEST(ScspLockFreeQueueTest, MultiThread) {
   auto consumer = [&]() {
     int value = -1;
     for (int i = 0; i < num_elements; ++i) {
-      while (!queue.pop(&value)) {
+      while (!queue.pop(value)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
       }
       std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));

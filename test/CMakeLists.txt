@@ -18,7 +18,7 @@ target_link_libraries(${PROJECT_NAME}_test
 enable_testing()
 
 # Add tests
-add_test(NAME AllTests COMMAND ${PROJECT_NAME}_test)
+add_test(${PROJECT_NAME}_test AllTests COMMAND ${PROJECT_NAME}_test)
 
 # Enable testing
 enable_testing()

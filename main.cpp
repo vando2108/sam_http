@@ -9,10 +9,10 @@
 #include <cstring>
 #include <thread>  // NOLINT
 
-#include "./include/data_structure/scsp_mutex_queue.hpp"
-#include "./include/http/http_server.hpp"
-#include "./include/socket/stream.hpp"
-#include "./include/utils/time.hpp"
+#include "../include/data_structure/scsp_lockfree_queue.hpp"
+#include "../include/http/http_server.hpp"
+#include "../include/socket/stream.hpp"
+#include "../include/utils/time.hpp"
 
 const int PORT = 3000;
 const int BACKLOG = 10;
@@ -22,30 +22,31 @@ void testScspLockFreeQueue() {
   // Test multithreading
   const int num_threads = 1;
   const int num_elements = 10;
+  const int sleep_time = 100;
 
-  sam::data_structure::ScspMutexQueue<int> mt_queue(num_elements * num_threads);
+  sam::data_structure::ScspLockFreeQueue<int> mt_queue(num_elements * num_threads);
 
   LOG(INFO) << "timestamp: " << sam::utils::now();
-  auto producer = [&mt_queue](int start) {
+  auto producer = [&](int start) {
     for (int i = start; i < start + num_elements; ++i) {
       while (!mt_queue.push(i)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % 1000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
       }
       LOG(INFO) << "push: " << i << ' ';
-      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % 1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
     }
   };
 
   auto consumer = [&mt_queue](std::vector<int>& results) {
     int value = -1;
     for (int i = 0; i < num_elements; ++i) {
-      while (!mt_queue.pop(&value)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % 1000));
-        LOG(INFO) << "pop false";
+      while (!mt_queue.pop(value)) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
+        LOG(INFO) << "test";
       }
       LOG(INFO) << "poped: " << value;
       results.push_back(value);
-      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % 1000));
+      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
     }
   };
 
