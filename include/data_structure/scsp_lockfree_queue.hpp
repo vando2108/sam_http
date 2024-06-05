@@ -17,6 +17,8 @@ constexpr std::size_t hardware_constructive_interference_size = 64;
 constexpr std::size_t hardware_destructive_interference_size = 64;
 #endif
 
+constexpr std::size_t kPaddingSize = hardware_constructive_interference_size - sizeof(std::size_t);
+
 namespace sam {
 namespace data_structure {
 template <typename T, typename Alloc = std::allocator<T>>
@@ -33,36 +35,36 @@ class ScspLockFreeQueue : private Alloc {
   alignas(hardware_constructive_interference_size) std::atomic<std::size_t> pop_cursor_{0};
   alignas(hardware_constructive_interference_size) std::size_t cached_pop_cursor_{0};
 
-  char padding_[hardware_constructive_interference_size - sizeof(std::size_t)];
+  char padding_[kPaddingSize];
 
  public:
   explicit ScspLockFreeQueue(size_t capacity, Alloc const& alloc = Alloc{})
-      : Alloc{alloc},
-        capacity_{capacity},
-        ring_{std::allocator_traits<Alloc>::allocate(*this, capacity)} {}
+      : Alloc{alloc}, capacity_{capacity}, ring_{std::allocator_traits<Alloc>::allocate(*this, capacity)} {}
 
-  ~ScspLockFreeQueue() {
+  ~ScspLockFreeQueue() { free_up_(); }
+
+  size_t capacity() const { return capacity_; }
+
+  bool full(std::size_t push_cursor, std::size_t pop_cursor) const { return (push_cursor - pop_cursor) == capacity(); }
+
+  bool empty(std::size_t push_cursor, std::size_t pop_cursor) const { return push_cursor == pop_cursor; }
+
+  auto element(std::size_t cursor) { return &ring_[cursor % capacity_]; }
+
+  bool push(T const& value);
+  bool pop(T& value);
+
+ public:
+  void operator=(ScspLockFreeQueue<T, Alloc>&& other);
+
+ private:
+  void free_up_() {
     while (!empty(push_cursor_, pop_cursor_)) {
       ring_[pop_cursor_.load(std::memory_order_relaxed) % capacity_].~T();
       pop_cursor_.fetch_add(1, std::memory_order_relaxed);
     }
     std::allocator_traits<Alloc>::deallocate(*this, ring_, capacity_);
   }
-
-  size_t capacity() const { return capacity_; }
-
-  bool full(std::size_t push_cursor, std::size_t pop_cursor) const {
-    return (push_cursor - pop_cursor) == capacity();
-  }
-
-  bool empty(std::size_t push_cursor, std::size_t pop_cursor) const {
-    return push_cursor == pop_cursor;
-  }
-
-  auto element(std::size_t cursor) { return &ring_[cursor % capacity_]; }
-
-  bool push(T const& value);
-  bool pop(T& value);  // NOLINT
 };
 
 template <typename T, typename Alloc>
@@ -82,7 +84,7 @@ bool ScspLockFreeQueue<T, Alloc>::push(T const& value) {
 }
 
 template <typename T, typename Alloc>
-bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {  // NOLINT
+bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {
   auto pop_cursor = pop_cursor_.load(std::memory_order_relaxed);
   if (empty(cached_push_cursor_, pop_cursor)) {
     cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
@@ -96,6 +98,29 @@ bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {  // NOLINT
   pop_cursor_.store(pop_cursor + 1, std::memory_order_release);
 
   return true;
+}
+
+template <typename T, typename Alloc>
+void ScspLockFreeQueue<T, Alloc>::operator=(ScspLockFreeQueue<T, Alloc>&& other) {
+  if (this != &other) {
+    free_up_();
+
+    // Transfer ownership of resources from other to *this
+    capacity_ = other.capacity_;
+    ring_ = other.ring_;
+    push_cursor_.store(other.push_cursor_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+    cached_push_cursor_ = other.cached_push_cursor_;
+    pop_cursor_.store(other.pop_cursor_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+    cached_pop_cursor_ = other.cached_pop_cursor_;
+
+    // Reset other to a valid state
+    other.capacity_ = 0;
+    other.ring_ = nullptr;
+    other.push_cursor_.store(0, std::memory_order_relaxed);
+    other.cached_push_cursor_ = 0;
+    other.pop_cursor_.store(0, std::memory_order_relaxed);
+    other.cached_pop_cursor_ = 0;
+  }
 }
 }  // namespace data_structure
 }  // namespace sam

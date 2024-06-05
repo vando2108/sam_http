@@ -5,85 +5,71 @@
 #include <unistd.h>
 
 #include <cassert>
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <cstring>
-#include <thread>  // NOLINT
+#include <functional>
+#include <thread>
 
 #include "../include/data_structure/scsp_lockfree_queue.hpp"
 #include "../include/http/http_server.hpp"
 #include "../include/socket/stream.hpp"
 #include "../include/utils/time.hpp"
+#include "data_structure/scsp_mutex_queue.hpp"
 
 const int PORT = 3000;
 const int BACKLOG = 10;
 const int BUFFER_SIZE = 1024;
+const int num_elements = 1000;
 
-void testScspLockFreeQueue() {
-  // Test multithreading
-  const int num_threads = 1;
-  const int num_elements = 10;
-  const int sleep_time = 100;
+void testScspMutexQueue() {
+  sam::data_structure::ScspMutexQueue<int> queue(num_elements);
 
-  sam::data_structure::ScspLockFreeQueue<int> mt_queue(num_elements * num_threads);
-
-  LOG(INFO) << "timestamp: " << sam::utils::now();
-  auto producer = [&](int start) {
-    for (int i = start; i < start + num_elements; ++i) {
-      while (!mt_queue.push(i)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
-      }
-      LOG(INFO) << "push: " << i << ' ';
-      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
+  auto producer = [&]() {
+    for (int i = 0; i < num_elements; ++i) {
+      queue.push(i);
     }
   };
 
-  auto consumer = [&mt_queue](std::vector<int>& results) {
+  auto consumer = [&]() {
     int value = -1;
     for (int i = 0; i < num_elements; ++i) {
-      while (!mt_queue.pop(value)) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
-        LOG(INFO) << "test";
-      }
-      LOG(INFO) << "poped: " << value;
-      results.push_back(value);
-      std::this_thread::sleep_for(std::chrono::milliseconds(sam::utils::now() % sleep_time));
+      queue.pop(&value);
     }
   };
 
-  std::vector<std::thread> producers;
-  std::vector<std::thread> consumers;
-  std::vector<std::vector<int>> results(num_threads);
+  std::thread producer_thread(producer);
+  std::thread consumer_thread(consumer);
+  producer_thread.join();
+  consumer_thread.join();
+}
 
-  // Start producers
-  for (int i = 0; i < num_threads; ++i) {
-    producers.emplace_back(producer, i * num_elements);
-  }
+void testScspLockFreeQueue() {
+  sam::data_structure::ScspLockFreeQueue<int> queue(num_elements);
 
-  // Start consumers
-  for (int i = 0; i < num_threads; ++i) {
-    consumers.emplace_back(consumer, std::ref(results[i]));
-  }
+  auto producer = [&]() {
+    for (int i = 0; i < num_elements; ++i) {
+      queue.push(i);
+    }
+  };
 
-  // Join producers
-  for (auto& producer : producers) {
-    producer.join();
-  }
+  auto consumer = [&]() {
+    int value = -1;
+    for (int i = 0; i < num_elements; ++i) {
+      queue.pop(value);
+    }
+  };
 
-  // Join consumers
-  for (auto& consumer : consumers) {
-    consumer.join();
-  }
+  std::thread producer_thread(producer);
+  std::thread consumer_thread(consumer);
+  producer_thread.join();
+  consumer_thread.join();
+}
 
-  // Verify results
-  std::vector<int> all_results;
-  for (const auto& res : results) {
-    all_results.insert(all_results.end(), res.begin(), res.end());
-  }
-  std::sort(all_results.begin(), all_results.end());
-
-  for (int i = 0; i < num_threads * num_elements; ++i) {
-    assert(all_results[i] == i);
-  }
+void logTime(std::string_view label, std::function<void()> func) {
+  const int start_time = sam::utils::now();
+  func();
+  const int end_time = sam::utils::now();
+  LOG(INFO) << "execution time of " << label << " function: " << end_time - start_time;
 }
 
 int main(int argc, char* argv[]) {
@@ -92,10 +78,11 @@ int main(int argc, char* argv[]) {
   // Set log info to console
   FLAGS_alsologtostderr = 1;
 
-  sam::socket::ServerStream server = sam::socket::ServerStream("127.0.0.1", 3000);
-  server.start();
+  // sam::socket::ServerStream server = sam::socket::ServerStream("127.0.0.1", 3000);
+  // server.start();
 
-  testScspLockFreeQueue();
+  logTime("mutex", testScspMutexQueue);
+  logTime("lockfree", testScspLockFreeQueue);
 
   // // Accept and handle incoming connections
   // while (true) {

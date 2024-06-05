@@ -18,18 +18,11 @@ class ScspMutexQueue : private Alloc {
   mutable std::mutex mutex_;
 
  public:
+ public:
   explicit ScspMutexQueue(size_t capacity, Alloc const& alloc = Alloc{})
-      : Alloc{alloc},
-        capacity_{capacity},
-        ring_{std::allocator_traits<Alloc>::allocate(*this, capacity)} {}
+      : Alloc{alloc}, capacity_{capacity}, ring_{std::allocator_traits<Alloc>::allocate(*this, capacity)} {}
 
-  ~ScspMutexQueue() {
-    while (!empty()) {
-      ring_[pop_cursor_ % capacity_].~T();
-      ++pop_cursor_;
-    }
-    std::allocator_traits<Alloc>::deallocate(*this, ring_, capacity_);
-  }
+  ~ScspMutexQueue() { free_up_(); }
 
   size_t capacity() const { return capacity_; }
   size_t size() const { return push_cursor_ - pop_cursor_; }
@@ -38,6 +31,18 @@ class ScspMutexQueue : private Alloc {
 
   bool push(T const& value);
   bool pop(T* value);
+
+ public:
+  void operator=(ScspMutexQueue<T, Alloc>&& other);
+
+ private:
+  void free_up_() {
+    while (!empty()) {
+      ring_[pop_cursor_ % capacity_].~T();
+      ++pop_cursor_;
+    }
+    std::allocator_traits<Alloc>::deallocate(*this, ring_, capacity_);
+  }
 };
 
 template <typename T, typename Alloc>
@@ -69,6 +74,25 @@ bool ScspMutexQueue<T, Alloc>::pop(T* value) {
   ++pop_cursor_;
 
   return true;
+}
+
+template <typename T, typename Alloc>
+void ScspMutexQueue<T, Alloc>::operator=(ScspMutexQueue<T, Alloc>&& other) {
+  if (this != &other) {
+    free_up_();
+
+    // Transfer ownership of resources from other to *this
+    capacity_ = other.capacity_;
+    ring_ = other.ring_;
+    push_cursor_ = other.push_cursor_;
+    pop_cursor_ = other.pop_cursor_;
+
+    // Reset other to a valid state
+    other.capacity_ = 0;
+    other.ring_ = nullptr;
+    other.push_cursor_ = 0;
+    other.pop_cursor_ = 0;
+  }
 }
 }  // namespace data_structure
 }  // namespace sam
