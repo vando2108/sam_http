@@ -16,7 +16,9 @@ using sam::data_structure::ScspMutexQueue;
 ScspLockFreeQueue<int> ScspLockFreeQueueFixture::queue(1000);
 ScspMutexQueue<int> ScspMutexQueueFixture::queue(1000);
 
-BENCHMARK_REGISTER_F(ScspLockFreeQueueFixture, ScspLockFreeQueueBenchmark)->Range(1000, 1000000)->Threads(2);
-BENCHMARK_REGISTER_F(ScspMutexQueueFixture, ScspMutexQueueBenchmark)->Range(1000, 1000000)->Threads(2);
+std::mutex ScspLockFreeQueueFixture::mu;
+
+BENCHMARK_REGISTER_F(ScspMutexQueueFixture, ScspMutexQueueBenchmark)->Range(1000, 1000000)->Threads(2)->UseRealTime();
+BENCHMARK_REGISTER_F(ScspLockFreeQueueFixture, ScspLockFreeQueueBenchmark)->Range(1000, 1000000)->Threads(2)->UseRealTime();
 
 BENCHMARK_MAIN();
