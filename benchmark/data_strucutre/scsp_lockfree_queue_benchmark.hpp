@@ -3,6 +3,8 @@
 
 #include <benchmark/benchmark.h>
 
+#include <mutex>
+
 #include "../../include/data_structure/scsp_lockfree_queue.hpp"
 
 namespace sam {
@@ -11,8 +13,10 @@ namespace data_structure {
 class ScspLockFreeQueueFixture : public ::benchmark::Fixture {
  public:
   static sam::data_structure::ScspLockFreeQueue<int> queue;
+  static std::mutex mu;
 
   void SetUp(::benchmark::State& state) override {
+    std::lock_guard<std::mutex> lock(mu);
     const int64_t number_of_elements = state.range(0);
     if (number_of_elements != queue.capacity()) {
       ScspLockFreeQueueFixture::queue = std::move(sam::data_structure::ScspLockFreeQueue<int>(number_of_elements));
