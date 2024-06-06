@@ -6,7 +6,6 @@
 #include <sys/socket.h>
 
 #include <cstring>
-#include <optional>
 
 namespace sam {
 namespace socket {

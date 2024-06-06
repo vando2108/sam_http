@@ -5,72 +5,14 @@
 #include <unistd.h>
 
 #include <cassert>
-#include <chrono>
 #include <cstring>
-#include <functional>
-#include <thread>
 
-#include "../include/data_structure/scsp_lockfree_queue.hpp"
 #include "../include/http/http_server.hpp"
 #include "../include/socket/stream.hpp"
-#include "../include/utils/time.hpp"
-#include "data_structure/scsp_mutex_queue.hpp"
 
 const int PORT = 3000;
 const int BACKLOG = 10;
 const int BUFFER_SIZE = 1024;
-const int num_elements = 1000;
-
-void testScspMutexQueue() {
-  sam::data_structure::ScspMutexQueue<int> queue(num_elements);
-
-  auto producer = [&]() {
-    for (int i = 0; i < num_elements; ++i) {
-      queue.push(i);
-    }
-  };
-
-  auto consumer = [&]() {
-    int value = -1;
-    for (int i = 0; i < num_elements; ++i) {
-      queue.pop(&value);
-    }
-  };
-
-  std::thread producer_thread(producer);
-  std::thread consumer_thread(consumer);
-  producer_thread.join();
-  consumer_thread.join();
-}
-
-void testScspLockFreeQueue() {
-  sam::data_structure::ScspLockFreeQueue<int> queue(num_elements);
-
-  auto producer = [&]() {
-    for (int i = 0; i < num_elements; ++i) {
-      queue.push(i);
-    }
-  };
-
-  auto consumer = [&]() {
-    int value = -1;
-    for (int i = 0; i < num_elements; ++i) {
-      queue.pop(value);
-    }
-  };
-
-  std::thread producer_thread(producer);
-  std::thread consumer_thread(consumer);
-  producer_thread.join();
-  consumer_thread.join();
-}
-
-void logTime(std::string_view label, std::function<void()> func) {
-  const int start_time = sam::utils::now();
-  func();
-  const int end_time = sam::utils::now();
-  LOG(INFO) << "execution time of " << label << " function: " << end_time - start_time;
-}
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
@@ -78,11 +20,8 @@ int main(int argc, char* argv[]) {
   // Set log info to console
   FLAGS_alsologtostderr = 1;
 
-  // sam::socket::ServerStream server = sam::socket::ServerStream("127.0.0.1", 3000);
-  // server.start();
-
-  logTime("mutex", testScspMutexQueue);
-  logTime("lockfree", testScspLockFreeQueue);
+  sam::socket::ServerStream server = sam::socket::ServerStream("127.0.0.1", 3000);
+  server.start();
 
   // // Accept and handle incoming connections
   // while (true) {
