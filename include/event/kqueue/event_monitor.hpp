@@ -1,11 +1,13 @@
 #ifndef EVENT_KQUEUE_EVENT_CENTER_HPP
 #define EVENT_KQUEUE_EVENT_CENTER_HPP
 
-#include <mutex>  // NOLINT
-#include <optional>
+#include <list>
+#include <mutex>
+#include <unordered_map>
 
-#include "../../define.hpp"
+#include "../define.hpp"
 #include "../event_monitor.hpp"
+#include "event/event.hpp"
 
 namespace sam {
 namespace event {
@@ -16,10 +18,11 @@ class KqueueEventMonitor : public IEventMonitor {
   ~KqueueEventMonitor();
 
  public:
-  std::optional<error_code_t> register_event(int fd) const override;
+  bool register_event(int, int) const override;
 
  private:
-  mutable std::mutex m_mutex;
+  std::unordered_map<event_id_t, std::list<std::unique_ptr<IObserver>>> registered_event_;
+  mutable std::mutex registered_event_mutex_;
 };
 }  // namespace kqueue
 }  // namespace event

@@ -1,9 +1,8 @@
 #ifndef EVENT_EVENT_MONITOR_HPP
 #define EVENT_EVENT_MONITOR_HPP
 
-#include <optional>
+#include <sys/event.h>
 
-#include "../define.hpp"
 #include "./event.hpp"
 
 namespace sam {
@@ -13,7 +12,7 @@ class IEventMonitor : public IEvent {
   ~IEventMonitor() {}
 
  public:
-  virtual std::optional<error_code_t> register_event(int) const = 0;
+  virtual bool register_event(int, int) const = 0;
 };
 }  // namespace event
 }  // namespace sam

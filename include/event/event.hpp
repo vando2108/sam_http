@@ -7,19 +7,44 @@
 namespace sam {
 namespace event {
 class IEvent {
+  int fd_;
+
  public:
-  IEvent() : m_fd(0) {}
-  ~IEvent() {
-    close(m_fd);
-    LOG(INFO) << "Closed event fd: " << m_fd;
+  IEvent() : fd_(0) {}
+  ~IEvent() {}
+
+ public:
+  int fd() const noexcept { return fd_; }
+
+  bool set_fd(const int& fd) noexcept {
+    if (fd < 0) {
+      return false;
+    }
+
+    fd_ = fd;
+    return true;
   }
+};
+
+class IObserver {
+  int fd_;
+  int filter_;
 
  public:
-  int fd() const noexcept { return m_fd; }
-  void set_fd(int fd) noexcept { m_fd = fd; }
+  IObserver() : fd_(0), filter_(0) {}
+  ~IObserver() {}
 
- private:
-  int m_fd;
+ public:
+  int fd() const noexcept { return fd_; }
+
+  bool set_fd(const int& fd) noexcept {
+    if (fd < 0) {
+      return false;
+    }
+
+    fd_ = fd;
+    return true;
+  }
 };
 }  // namespace event
 }  // namespace sam
