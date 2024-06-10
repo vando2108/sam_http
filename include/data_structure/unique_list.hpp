@@ -1,6 +1,8 @@
 #ifndef DATA_STRUCTURE_UNIQUE_LIST_HPP
 #define DATA_STRUCTURE_UNIQUE_LIST_HPP
 
+#include <glog/logging.h>
+
 #include <cassert>
 #include <functional>
 #include <list>
@@ -9,8 +11,17 @@
 
 namespace sam {
 namespace data_structure {
+
 template <typename T, typename Hash = std::hash<T>>
 class UniqueList {
+ public:
+  enum REPLACE_RESULT {
+    SUCCESS = 0,
+    DUPLICATE_HASH,
+    KEY_NOT_FOUND,
+  };
+
+ private:
   std::list<T> list_;
   std::unordered_map<T, typename std::list<T>::iterator, Hash> map_;
 
@@ -24,7 +35,7 @@ class UniqueList {
   bool pop_back(T&);
   bool pop(const T&);
   bool contain(const T&) const;
-  bool replace(const T&, const T&);
+  REPLACE_RESULT replace(const T&, const T&);
 
   bool empty() const { return list_.empty(); }
   size_t size() const {
@@ -85,21 +96,23 @@ bool UniqueList<T, Hash>::contain(const T& key) const {
 }
 
 template <typename T, typename Hash>
-bool UniqueList<T, Hash>::replace(const T& value, const T& replace_value) {
+UniqueList<T, Hash>::REPLACE_RESULT UniqueList<T, Hash>::replace(const T& value, const T& replace_value) {
   if (!contain(value)) {
-    return false;
+    return KEY_NOT_FOUND;
   }
 
-  auto node = map_.at(value);
-  *node = replace_value;
-
-  auto value_hashed = Hash(value), replace_value_hashed = Hash(value);
-  if (value_hashed != replace_value_hashed) {
+  Hash hash_function;
+  auto value_hashed = hash_function(value), replace_value_hashed = hash_function(replace_value);
+  if (value_hashed != replace_value_hashed && !contain(replace_value)) {
+    auto node = map_.at(value);
     map_.erase(value);
     map_[replace_value] = node;
+    *node = replace_value;
+  } else {
+    return DUPLICATE_HASH;
   }
 
-  return true;
+  return SUCCESS;
 }
 
 template <typename T, typename Hash>
@@ -110,6 +123,7 @@ std::optional<typename std::list<T>::const_iterator> UniqueList<T, Hash>::try_ge
 
   return std::nullopt;
 }
+
 }  // namespace data_structure
 }  // namespace sam
 
