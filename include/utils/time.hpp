@@ -2,6 +2,7 @@
 #define UTILS_TIME_HPP
 
 #include <cstdint>
+
 namespace sam {
 namespace utils {
 uint64_t now();

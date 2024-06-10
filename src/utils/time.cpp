@@ -1,6 +1,6 @@
 #include "../../include/utils/time.hpp"
 
-#include <chrono>  // NOLINT
+#include <chrono>
 #include <cstdint>
 
 namespace sam {
