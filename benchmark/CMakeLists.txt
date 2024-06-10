@@ -5,7 +5,7 @@ file(GLOB_RECURSE BENCHMARK_SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 # Add benchmark executable
 add_executable(${PROJECT_NAME}_benchmark
   ${BENCHMARK_MAIN_SOURCE_FILE}
-  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${BENCHMARK_SOURCE_FILES}
   ${SOURCE_FILES}  # Link all source files to the benchmark executable
 )
 

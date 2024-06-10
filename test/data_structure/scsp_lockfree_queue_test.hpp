@@ -1,11 +1,10 @@
-#include "../../include/data_structure/scsp_lockfree_queue.hpp"
-
 #include <gtest/gtest.h>
 
 #include <algorithm>
-#include <chrono>  // NOLINT
-#include <thread>  // NOLINT
+#include <chrono>
+#include <thread>
 
+#include "../../include/data_structure/scsp_lockfree_queue.hpp"
 #include "../../include/utils/time.hpp"
 
 TEST(ScspLockFreeQueueTest, BasicOperations) {
@@ -73,9 +72,4 @@ TEST(ScspLockFreeQueueTest, MultiThread) {
   for (int i = 0; i < num_elements; ++i) {
     EXPECT_EQ(i, consumed[i]);
   }
-}
-
-int main(int argc, char** argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }
