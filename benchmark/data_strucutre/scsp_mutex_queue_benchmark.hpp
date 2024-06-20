@@ -37,7 +37,7 @@ BENCHMARK_DEFINE_F(ScspMutexQueueFixture, ScspMutexQueueBenchmark)(::benchmark::
     int value = -1;
     for (auto _ : state) {
       for (int64_t i = 0; i < number_of_elements; ++i) {
-        queue.pop(&value);
+        queue.pop_front(&value);
       }
     }
   }

@@ -30,7 +30,7 @@ class ScspMutexQueue : private Alloc {
   bool full() const { return size() == capacity(); }
 
   bool push(T const& value);
-  bool pop(T* value);
+  bool pop_front(T* value);
 
  public:
   void operator=(ScspMutexQueue<T, Alloc>&& other);
@@ -61,7 +61,7 @@ bool ScspMutexQueue<T, Alloc>::push(T const& value) {
 }
 
 template <typename T, typename Alloc>
-bool ScspMutexQueue<T, Alloc>::pop(T* value) {
+bool ScspMutexQueue<T, Alloc>::pop_front(T* value) {
   std::lock_guard<std::mutex> guard(mutex_);
   if (empty()) {
     return false;

@@ -46,20 +46,29 @@ class ScspLockFreeQueue : private Alloc {
   size_t capacity() const { return capacity_; }
 
   bool full(std::size_t push_cursor, std::size_t pop_cursor) const { return (push_cursor - pop_cursor) == capacity(); }
+  bool empty() {
+    if (empty_(cached_push_cursor_, cached_pop_cursor_)) {
+      return true;
+    }
 
-  bool empty(std::size_t push_cursor, std::size_t pop_cursor) const { return push_cursor == pop_cursor; }
+    cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
+    cached_pop_cursor_ = pop_cursor_.load(std::memory_order_acquire);
+    return empty_(cached_push_cursor_, cached_pop_cursor_);
+  }
 
   auto element(std::size_t cursor) { return &ring_[cursor % capacity_]; }
 
-  bool push(T const& value);
-  bool pop(T& value);
+  bool push(T const&);
+  bool pop(T&);
+  bool push(T&&);
 
  public:
   void operator=(ScspLockFreeQueue<T, Alloc>&& other);
 
  private:
+  bool empty_(std::size_t push_cursor, std::size_t pop_cursor) const { return push_cursor == pop_cursor; }
   void free_up_() {
-    while (!empty(push_cursor_, pop_cursor_)) {
+    while (!empty_(push_cursor_, pop_cursor_)) {
       ring_[pop_cursor_.load(std::memory_order_relaxed) % capacity_].~T();
       pop_cursor_.fetch_add(1, std::memory_order_relaxed);
     }
@@ -84,16 +93,32 @@ bool ScspLockFreeQueue<T, Alloc>::push(T const& value) {
 }
 
 template <typename T, typename Alloc>
-bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {
-  auto pop_cursor = pop_cursor_.load(std::memory_order_relaxed);
-  if (empty(cached_push_cursor_, pop_cursor)) {
-    cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
-    if (empty(cached_push_cursor_, pop_cursor)) {
+bool ScspLockFreeQueue<T, Alloc>::push(T&& value) {
+  auto push_cursor = push_cursor_.load(std::memory_order_relaxed);
+  if (full(push_cursor, cached_pop_cursor_)) {
+    cached_pop_cursor_ = pop_cursor_.load(std::memory_order_acquire);
+    if (full(push_cursor, cached_pop_cursor_)) {
       return false;
     }
   }
 
-  value = *element(pop_cursor);
+  new (element(push_cursor)) T(std::forward<T>(value));
+  push_cursor_.store(push_cursor + 1, std::memory_order_release);
+
+  return true;
+}
+
+template <typename T, typename Alloc>
+bool ScspLockFreeQueue<T, Alloc>::pop(T& value) {
+  auto pop_cursor = pop_cursor_.load(std::memory_order_relaxed);
+  if (empty_(cached_push_cursor_, pop_cursor)) {
+    cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
+    if (empty_(cached_push_cursor_, pop_cursor)) {
+      return false;
+    }
+  }
+
+  value = std::move(*element(pop_cursor));
   element(pop_cursor)->~T();
   pop_cursor_.store(pop_cursor + 1, std::memory_order_release);
 

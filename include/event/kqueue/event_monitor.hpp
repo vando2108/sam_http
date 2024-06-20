@@ -21,7 +21,7 @@ class KqueueEventMonitor : public IEventMonitor {
   bool register_event(int, int) const override;
 
  private:
-  std::unordered_map<event_id_t, std::list<std::unique_ptr<IObserver>>> registered_event_;
+  // std::unordered_map<event_id_t, std::list<std::unique_ptr<IObserver>>> registered_event_;
   mutable std::mutex registered_event_mutex_;
 };
 }  // namespace kqueue
