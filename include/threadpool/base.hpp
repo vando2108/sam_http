@@ -24,7 +24,7 @@ class IThreadpool {
   bool is_running_;
   size_t busy_thread_;
 
-  friend class IWorker;
+  // friend class IWorker;
 
  public:
   IThreadpool() = delete;
@@ -40,14 +40,15 @@ class IThreadpool {
   virtual void initialize_() = 0;
 };
 
+template <typename ThreadpoolType>
 class IWorker {
  protected:
   size_t id_;
-  std::shared_ptr<IThreadpool> thread_pool_;
+  std::shared_ptr<ThreadpoolType> thread_pool_;
 
  public:
   IWorker() = delete;
-  IWorker(size_t id, std::shared_ptr<IThreadpool> thread_pool) : id_(id), thread_pool_(thread_pool) {}
+  IWorker(size_t id, std::shared_ptr<ThreadpoolType> thread_pool) : id_(id), thread_pool_(thread_pool) {}
 
   virtual ~IWorker() = default;
 

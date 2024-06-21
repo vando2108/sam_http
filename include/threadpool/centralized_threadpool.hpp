@@ -9,7 +9,7 @@
 namespace sam {
 namespace threadpool {
 namespace centralized {
-class ICentralizedThreadpool : public IThreadpool {
+class ICentralizedThreadpool : public IThreadpool, public std::enable_shared_from_this<ICentralizedThreadpool> {
  protected:
   std::mutex task_queue_mutex_;
   std::condition_variable task_queue_conditional_variable_;
@@ -21,7 +21,7 @@ class ICentralizedThreadpool : public IThreadpool {
   ICentralizedThreadpool(Config&& config) : task_queue_(config.task_queue_cap), IThreadpool(std::forward<Config>(config)) {}
 };
 
-class Threadpool : public ICentralizedThreadpool, public std::enable_shared_from_this<Threadpool> {
+class Threadpool : public ICentralizedThreadpool {
   friend class Worker;
 
  private:
@@ -40,9 +40,7 @@ class Threadpool : public ICentralizedThreadpool, public std::enable_shared_from
   auto submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))>;
 };
 
-class Worker : public IWorker {
-  std::shared_ptr<ICentralizedThreadpool> thread_pool_;
-
+class Worker : public IWorker<ICentralizedThreadpool> {
  public:
   Worker() = delete;
   Worker(size_t, std::shared_ptr<ICentralizedThreadpool>);
