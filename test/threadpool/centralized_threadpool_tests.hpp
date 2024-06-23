@@ -8,10 +8,10 @@
 #include "utils/rand.hpp"
 
 using sam::threadpool::Config;
-using sam::threadpool::centralized::Threadpool;
+using sam::threadpool::centralized::CentralizedThreadpool;
 
 TEST(CentralizedThreadpoolTest, Initialize) {
-  auto pool = Threadpool::create(std::move(Config(6, 6, "sam")));
+  auto pool = CentralizedThreadpool::create(std::move(Config(6, 6, "sam")));
   ASSERT_TRUE(pool->is_running());
   ASSERT_EQ(pool->config().worker_prefix, "sam");
   ASSERT_EQ(pool->config().minimum_thread, 6);
@@ -19,7 +19,7 @@ TEST(CentralizedThreadpoolTest, Initialize) {
 }
 
 TEST(CentralizedThreadpoolTest, SingleTaskExecution) {
-  auto pool = Threadpool::create(std::move(Config(6, 6, "sam")));
+  auto pool = CentralizedThreadpool::create(std::move(Config(6, 6, "sam")));
   auto task = []() { return 42; };
   auto future = pool->submit_task(task);
 
@@ -27,7 +27,7 @@ TEST(CentralizedThreadpoolTest, SingleTaskExecution) {
 }
 
 TEST(CentralizedThreadpoolTest, MultipleTaskExecution) {
-  auto pool = Threadpool::create(std::move(Config(6, 6, "sam")));
+  auto pool = CentralizedThreadpool::create(std::move(Config(6, 6, "sam")));
 
   auto task1 = []() { return 1; };
   auto task2 = []() { return 2; };
@@ -43,7 +43,7 @@ TEST(CentralizedThreadpoolTest, MultipleTaskExecution) {
 }
 
 TEST(CentralizedThreadpoolTest, ConcurrentTaskExecution) {
-  auto pool = Threadpool::create(std::move(Config()));
+  auto pool = CentralizedThreadpool::create(std::move(Config()));
   auto data = sam::utils::rand::rand_list_int(100, 1000);
   std::vector<std::future<int>> futures;
 
@@ -66,7 +66,7 @@ TEST(CentralizedThreadpoolTest, Destruction) {
     sam::threadpool::Config config;
     config.task_queue_cap = 100;
     config.minimum_thread = 4;
-    auto pool = Threadpool::create(std::move(Config()));
+    auto pool = CentralizedThreadpool::create(std::move(Config()));
 
     auto task = []() { return 42; };
     auto future = pool->submit_task(task);

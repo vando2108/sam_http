@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 
   sam::threadpool::Config config;
   config.minimum_thread = 10;
-  auto threadpool = sam::threadpool::centralized::Threadpool::create(std::move(config));
+  auto threadpool = sam::threadpool::centralized::CentralizedThreadpool::create(std::move(config));
 
   auto task = []() {
     LOG(INFO) << "Task is running";

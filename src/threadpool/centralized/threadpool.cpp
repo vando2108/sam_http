@@ -9,9 +9,9 @@
 namespace sam {
 namespace threadpool {
 namespace centralized {
-Threadpool::Threadpool(Config&& config) : ICentralizedThreadpool(std::forward<Config>(config)) {}
+CentralizedThreadpool::CentralizedThreadpool(Config&& config) : ICentralizedThreadpool(std::forward<Config>(config)) {}
 
-Threadpool::~Threadpool() {
+CentralizedThreadpool::~CentralizedThreadpool() {
   {
     std::unique_lock<std::mutex> lock{task_queue_mutex_};
     is_running_ = false;
@@ -27,15 +27,15 @@ Threadpool::~Threadpool() {
   }
 }
 
-void Threadpool::initialize_() {
+void CentralizedThreadpool::initialize_() {
   auto this_ptr = shared_from_this();
   for (size_t i = 0; i < config_.minimum_thread; ++i) {
     workers_.emplace_back(std::thread{Worker{i, this_ptr}});
   }
 }
 
-std::shared_ptr<Threadpool> Threadpool::create(Config&& config) {
-  auto pool = std::shared_ptr<Threadpool>(new Threadpool(std::move(config)));
+std::shared_ptr<CentralizedThreadpool> CentralizedThreadpool::create(Config&& config) {
+  auto pool = std::shared_ptr<CentralizedThreadpool>(new CentralizedThreadpool(std::move(config)));
   pool->initialize_();
 
   return pool;
