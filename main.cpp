@@ -5,10 +5,28 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <condition_variable>
 #include <cstring>
+#include <future>
+#include <mutex>
+#include <queue>
+#include <thread>
+#include <utility>
 
-#include "../include/http/http_server.hpp"
-#include "utils/rand.hpp"
+#include "http/http_server.hpp"
+#include "socket/stream.hpp"
+#include "threadpool/base.hpp"
+#include "threadpool/centralized_threadpool.hpp"
+
+std::mutex mutex;
+std::condition_variable condition_variable;
+bool lock_key;
+
+void thread(int id) {
+  std::unique_lock<std::mutex> lock{mutex};
+  condition_variable.wait(lock, [&] { return lock_key; });
+  LOG(INFO) << "thread " << id << " finish running";
+}
 
 int main(int argc, char* argv[]) {
   google::InitGoogleLogging(argv[0]);
@@ -19,10 +37,28 @@ int main(int argc, char* argv[]) {
   // sam::socket::ServerStream server = sam::socket::ServerStream("127.0.0.1", 3000);
   // server.start();
 
-  auto temp = sam::utils::rand::rand_list_int(10, 10);
-  for (auto it : temp) {
-    LOG(INFO) << it << ' ';
+  sam::threadpool::Config config;
+  config.minimum_thread = 10;
+  auto threadpool = sam::threadpool::centralized::Threadpool::create(std::move(config));
+
+  auto task = []() {
+    LOG(INFO) << "Task is running";
+    return 42;
+  };
+
+  auto future = threadpool->submit_task(task);
+  LOG(INFO) << "Got the return value from thread_pool: " << future.get();
+
+  for (;;) {
+    char buff[1024];
+    char* cmd = fgets(buff, sizeof(buff), stdin);
+
+    if (cmd == nullptr) {
+      break;
+    }
   }
+
+  LOG(INFO) << "terminate...";
 
   return 0;
 }

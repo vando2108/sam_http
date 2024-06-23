@@ -3,7 +3,7 @@
 
 #include <netinet/in.h>
 
-#include <mutex>  // NOLINT
+#include <mutex>
 #include <string_view>
 
 #include "../event/event.hpp"
@@ -15,21 +15,28 @@ class IStream : public event::IEvent {
   virtual ~IStream() {}
 };
 
-class ServerStream : IStream {
+class ClientStream : public IStream {
+ public:
+  ClientStream(int);
+  ~ClientStream() {}
+
+ public:
+  long recv(std::vector<char>&, int) const;
+};
+
+class ServerStream : public IStream {
  public:
   ServerStream(std::string_view, size_t);
   ~ServerStream();
 
  public:
-  void start();
-  void accept();
+  void start() const;
+  std::unique_ptr<ClientStream> accept() const;
 
  private:
   sockaddr_in m_addr;
   mutable std::mutex m_mu;
 };
-
-class ClientStream : IStream {};
 }  // namespace socket
 }  // namespace sam
 

@@ -71,17 +71,15 @@ TEST(UniqueListTest, ReplaceOperation) {
   auto mock_data = sam::utils::rand::rand_list_int(10000, 10000);
   UniqueList<int> unique_list(mock_data);
 
-  // Successful replacement
   int value = mock_data[0];
-  int replace_value = 10001;  // Assume this value is not in mock_data
+  int replace_value = 10001;
   auto result = unique_list.replace(value, replace_value);
   ASSERT_EQ(result, UniqueList<int>::SUCCESS) << "Expected SUCCESS when replacing an existing element with a new unique element.";
   ASSERT_FALSE(unique_list.contain(value)) << "Expected unique_list to no longer contain the old value after replacement.";
   ASSERT_TRUE(unique_list.contain(replace_value)) << "Expected unique_list to contain the new value after replacement.";
 
-  // Replacement with duplicate hash
   value = mock_data[1];
-  replace_value = mock_data[2];  // Assume this value is already in mock_data
+  replace_value = mock_data[2];
   result = unique_list.replace(value, replace_value);
   ASSERT_EQ(result, UniqueList<int>::DUPLICATE_HASH)
       << "Expected DUPLICATE_HASH when replacing with an element that has the same hash as an existing element.";
@@ -89,9 +87,8 @@ TEST(UniqueListTest, ReplaceOperation) {
   ASSERT_TRUE(unique_list.contain(replace_value))
       << "Expected unique_list to still contain the conflicting value when replacement fails due to duplicate hash.";
 
-  // Replacement when key not found
-  value = 20000;          // Assume this value is not in mock_data
-  replace_value = 30000;  // Assume this value is also not in mock_data
+  value = 20000;
+  replace_value = 30000;
   result = unique_list.replace(value, replace_value);
   ASSERT_EQ(result, UniqueList<int>::KEY_NOT_FOUND) << "Expected KEY_NOT_FOUND when trying to replace a non-existent element.";
   ASSERT_FALSE(unique_list.contain(value)) << "Expected unique_list to not contain the non-existent original value.";

@@ -17,12 +17,13 @@ KqueueEventMonitor::KqueueEventMonitor() {
   set_fd(kqueue_fd);
 }
 
-std::optional<error_code_t> KqueueEventMonitor::register_event(int fd) const {
+bool KqueueEventMonitor::register_event(int fd, int filter) const {
   if (fd < 0) {
     return EINVAL;
   }
 
-  return std::nullopt;
+  // return std::nullopt;
+  return false;
 }
 }  // namespace kqueue
 }  // namespace event
