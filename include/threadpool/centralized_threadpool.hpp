@@ -21,7 +21,7 @@ class ICentralizedThreadpool : public IThreadpool, public std::enable_shared_fro
   ICentralizedThreadpool(Config&& config) : task_queue_(config.task_queue_cap), IThreadpool(std::forward<Config>(config)) {}
 };
 
-class Threadpool : public ICentralizedThreadpool {
+class CentralizedThreadpool : public ICentralizedThreadpool {
   friend class Worker;
 
  private:
@@ -30,11 +30,11 @@ class Threadpool : public ICentralizedThreadpool {
   void initialize_() override;
 
  public:
-  Threadpool() = delete;
-  explicit Threadpool(Config&&);
-  ~Threadpool();
+  CentralizedThreadpool() = delete;
+  explicit CentralizedThreadpool(Config&&);
+  ~CentralizedThreadpool();
 
-  static std::shared_ptr<Threadpool> create(Config&&);
+  static std::shared_ptr<CentralizedThreadpool> create(Config&&);
 
   template <typename F, typename... Args>
   auto submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))>;
@@ -49,7 +49,7 @@ class Worker : public IWorker<ICentralizedThreadpool> {
 };
 
 template <typename F, typename... Args>
-auto Threadpool::submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+auto CentralizedThreadpool::submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
   using return_type = decltype(f(args...));
 
   std::packaged_task<return_type()> task(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
