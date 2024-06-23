@@ -36,6 +36,9 @@ class IThreadpool {
   template <typename Func, typename... Args>
   auto submit_task(Func&& func, Args&&... args) -> std::future<decltype(func(args...))>;
 
+  bool is_running() const noexcept { return is_running_; }
+  const Config& config() const noexcept { return config_; }
+
  private:
   virtual void initialize_() = 0;
 };

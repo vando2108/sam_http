@@ -53,10 +53,10 @@ auto Threadpool::submit_task(F&& f, Args&&... args) -> std::future<decltype(f(ar
   using return_type = decltype(f(args...));
 
   std::packaged_task<return_type()> task(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-  auto task_ptr = std::make_unique<std::packaged_task<return_type()>>(std::move(task));
+  auto task_ptr = std::make_shared<std::packaged_task<return_type()>>(std::move(task));
   auto result = task_ptr->get_future();
 
-  auto wrapper = [&task_ptr]() { (*task_ptr)(); };
+  auto wrapper = [task_ptr]() { (*task_ptr)(); };
 
   {
     std::scoped_lock<std::mutex> lock{task_queue_mutex_};

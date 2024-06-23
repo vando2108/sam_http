@@ -47,10 +47,6 @@ class ScspLockFreeQueue : private Alloc {
 
   bool full(std::size_t push_cursor, std::size_t pop_cursor) const { return (push_cursor - pop_cursor) == capacity(); }
   bool empty() {
-    if (empty_(cached_push_cursor_, cached_pop_cursor_)) {
-      return true;
-    }
-
     cached_push_cursor_ = push_cursor_.load(std::memory_order_acquire);
     cached_pop_cursor_ = pop_cursor_.load(std::memory_order_acquire);
     return empty_(cached_push_cursor_, cached_pop_cursor_);

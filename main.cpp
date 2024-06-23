@@ -39,7 +39,15 @@ int main(int argc, char* argv[]) {
 
   sam::threadpool::Config config;
   config.minimum_thread = 10;
-  auto temp = sam::threadpool::centralized::Threadpool::create(std::move(config));
+  auto threadpool = sam::threadpool::centralized::Threadpool::create(std::move(config));
+
+  auto task = []() {
+    LOG(INFO) << "Task is running";
+    return 42;
+  };
+
+  auto future = threadpool->submit_task(task);
+  LOG(INFO) << "Got the return value from thread_pool: " << future.get();
 
   for (;;) {
     char buff[1024];
@@ -51,11 +59,6 @@ int main(int argc, char* argv[]) {
   }
 
   LOG(INFO) << "terminate...";
-  //
-  // auto task = []() { return 42; };
-  //
-  // auto future = threadpool.submit_task(task);
-  // LOG(INFO) << future.get();
 
   return 0;
 }
