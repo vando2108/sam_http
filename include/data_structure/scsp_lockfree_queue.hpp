@@ -38,8 +38,30 @@ class ScspLockFreeQueue : private Alloc {
   char padding_[kPaddingSize];
 
  public:
-  explicit ScspLockFreeQueue(size_t capacity, Alloc const& alloc = Alloc{})
+  ScspLockFreeQueue(size_t capacity, Alloc const& alloc = Alloc{})
       : Alloc{alloc}, capacity_{capacity}, ring_{std::allocator_traits<Alloc>::allocate(*this, capacity)} {}
+
+  explicit ScspLockFreeQueue(ScspLockFreeQueue&& other) {
+    if (this != &other) {
+      free_up_();
+
+      // Transfer ownership of resources from other to *this
+      capacity_ = other.capacity_;
+      ring_ = other.ring_;
+      push_cursor_.store(other.push_cursor_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+      cached_push_cursor_ = other.cached_push_cursor_;
+      pop_cursor_.store(other.pop_cursor_.load(std::memory_order_relaxed), std::memory_order_relaxed);
+      cached_pop_cursor_ = other.cached_pop_cursor_;
+
+      // Reset other to a valid state
+      other.capacity_ = 0;
+      other.ring_ = nullptr;
+      other.push_cursor_.store(0, std::memory_order_relaxed);
+      other.cached_push_cursor_ = 0;
+      other.pop_cursor_.store(0, std::memory_order_relaxed);
+      other.cached_pop_cursor_ = 0;
+    }
+  }
 
   ~ScspLockFreeQueue() { free_up_(); }
 

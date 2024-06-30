@@ -17,7 +17,7 @@ CentralizedThreadpool::~CentralizedThreadpool() {
     is_running_ = false;
   }
 
-  // task_queue_conditional_variable_.notify_all();
+  task_queue_conditional_variable_.notify_all();
   for (auto& worker : workers_) {
     if (worker.joinable()) {
       worker.join();
@@ -28,9 +28,8 @@ CentralizedThreadpool::~CentralizedThreadpool() {
 }
 
 void CentralizedThreadpool::initialize_() {
-  auto this_ptr = shared_from_this();
   for (size_t i = 0; i < config_.minimum_thread; ++i) {
-    workers_.emplace_back(std::thread{Worker{i, this_ptr}});
+    workers_.emplace_back(std::thread{Worker{i, shared_from_this()}});
   }
 }
 
