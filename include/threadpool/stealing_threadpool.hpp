@@ -1,7 +1,10 @@
+#include <future>
 #include <memory>
+#include <mutex>
 
 #include "data_structure/scsp_lockfree_queue.hpp"
 #include "threadpool/base.hpp"
+
 namespace sam {
 namespace threadpool {
 namespace stealing {
@@ -13,6 +16,21 @@ class IStealingThreadpool : public IThreadpool, public std::enable_shared_from_t
 
 class StealingThreadpool : public IStealingThreadpool {
   std::vector<std::thread> workers_;
+
+  /**
+   * @brief Since we are using the scsp_lockfree_queue, we need to have two separate mutex locks for each side of the queue.
+   */
+  data_structure::ScspLockFreeQueue<Task> global_task_queue_;
+
+  /**
+   * @brief Mutex lock for the push/enqueue side of the global task queue.
+   */
+  std::mutex global_task_queue_mutex_enqueue_;
+
+  /**
+   * @brief Mutex lock for the pop/dequeue side of the global task queue.
+   */
+  std::mutex global_task_queue_mutex_dequeue_;
 
   /**
    * @brief Initializes the worker threads.
@@ -61,6 +79,20 @@ class Worker : public IWorker<IStealingThreadpool> {
 
   void operator()() override;
 };
+
+template <typename F, typename... Args>
+auto StealingThreadpool::submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+  using return_type = decltype(f(args...));
+
+  std::packaged_task<return_type()> task(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+  auto task_ptr = std::make_shared<std::packaged_task<return_type()>>(std::move(task));
+  auto result = task_ptr->get_future();
+  auto wrapper = [task_ptr]() { (*task_ptr)(); };
+
+  { std::scoped_lock<std::mutex> lock{global_task_queue_mutex_enqueue_}; }
+
+  return result;
+}
 }  // namespace stealing
 }  // namespace threadpool
 }  // namespace sam

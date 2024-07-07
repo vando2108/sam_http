@@ -116,15 +116,6 @@ class Worker : public IWorker<ICentralizedThreadpool> {
   void operator()() override;
 };
 
-/**
- * @brief Submits a task to the threadpool for execution.
- *
- * @tparam F The type of the function to execute.
- * @tparam Args The types of the arguments to pass to the function.
- * @param f The function to execute.
- * @param args The arguments to pass to the function.
- * @return std::future<decltype(f(args...))> Future representing the result of the task.
- */
 template <typename F, typename... Args>
 auto CentralizedThreadpool::submit_task(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
   using return_type = decltype(f(args...));
@@ -132,7 +123,6 @@ auto CentralizedThreadpool::submit_task(F&& f, Args&&... args) -> std::future<de
   std::packaged_task<return_type()> task(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
   auto task_ptr = std::make_shared<std::packaged_task<return_type()>>(std::move(task));
   auto result = task_ptr->get_future();
-
   auto wrapper = [task_ptr]() { (*task_ptr)(); };
 
   {
