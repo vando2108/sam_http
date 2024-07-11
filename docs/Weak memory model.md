@@ -1,4 +1,4 @@
-
+#Memory #Cache
 ## What is weak-memory model ?
 The weak memory model allows CPU make a lot of optimization by reordering the order of instructions.
 If there are no fence apply (memory_order_relaxed), the execution order isn't prevent.
@@ -75,6 +75,8 @@ Multi-level caches are used to balance speed and cost. L1 cache is the fastest a
 3. ***L3 or Level 3 Cache:**** It is the third level of cache memory that is present outside the CPU and is shared by all the cores of the CPU. Some high processors may have this cache. This cache is used to increase the performance of the L2 and L1 cache. The size of this memory ranges from 1 MB to 8MB.
 
 ### Cache Coherence
+https://redis.io/glossary/cache-coherence/#:~:text=Cache%20coherence%20refers%20to%20the,cache%20memory%20to%20improve%20performance.
+
 In multiprocessor system where many processes needs a copy of same memory block, the maintenance of consistency among these copies raises a problem referred to as **Cache Coherence Problem.***
 
 This occurs mainly due to these causes:
@@ -83,3 +85,34 @@ This occurs mainly due to these causes:
 - Inconsistency due to I/O.
 
 ![[Pasted image 20240708003452.png]]
+
+### How main memory loaded to CPU Cache? 
+When a CPU fetches data from memory, it typically loads more than just the specific piece of data it needs. This is done to take advantage of spatial locality, a principle that suggests that data near a recently accessed memory location is likely to be accessed soon. Here’s a more detailed explanation of how this process works:
+#### Cache Line
+- **Cache Line**: The smallest unit of data transfer between the main memory and the cache is called a cache line or cache block. The size of a cache line is typically 32 to 256 bytes, depending on the architecture.
+#### Loading Data into Cache
+1. **Cache Miss**: When the CPU cannot find the required data in the cache (L1, L2, or L3), it initiates a cache miss.
+2. **Fetching Cache Line**: Instead of fetching just the requested data, the CPU fetches an entire cache line that includes the requested data and adjacent data from the main memory.
+3. **Updating Cache**: The fetched cache line is loaded into the appropriate cache level (L1, L2, or L3). If necessary, existing data in the cache is evicted based on the cache’s replacement policy (e.g., LRU - Least Recently Used).
+4. **Data Propagation**:
+    - The cache line is first loaded into the L3 cache.
+    - If the data is accessed again soon, it is moved to the L2 cache.
+    - If it continues to be accessed frequently, it will eventually be moved to the L1 cache.
+#### Example of Cache Line Loading
+Let’s say the CPU needs to access data at memory address 0x1000:
+
+1. **Cache Miss**: The CPU checks the L1 cache for data at 0x1000 and does not find it (miss).
+2. **Fetch Cache Line**: The CPU fetches a cache line (e.g., 64 bytes) starting from address 0x1000. This means addresses 0x1000 through 0x103F are fetched.
+3. **Update Cache**:
+    - This cache line is loaded into the L3 cache.
+    - If the CPU accesses any data within this range (0x1000 to 0x103F), it will result in a hit in the L3 cache, and the data will be promoted to the L2 cache.
+    - If the data is accessed frequently, it will be further promoted to the L1 cache.
+#### Benefits of Loading Cache Lines
+- **Spatial Locality**: By loading a cache line, the CPU anticipates future accesses to nearby data, reducing the number of cache misses.
+- **Efficiency**: Transferring larger blocks of data (cache lines) is more efficient than transferring many small pieces of data due to the way modern memory systems and buses are optimized.
+#### Cache Replacement Policies
+When a new cache line is loaded into a cache, an existing cache line might need to be evicted. Replacement policies determine which cache line to evict:
+- **Least Recently Used (LRU)**: Evicts the least recently accessed cache line.
+- **First-In, First-Out (FIFO)**: Evicts the oldest cache line.
+- **Random Replacement**: Evicts a randomly selected cache line.
+- **Least Frequently Used (LFU)**: Evicts the least frequently accessed cache line.
