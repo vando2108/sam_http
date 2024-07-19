@@ -1,5 +1,23 @@
 #memory_order
 youtube: https://www.youtube.com/watch?v=ZQFzMfHIxng&t=2959s
+
+# compare_exchange
+There are two types of `compare_exchange` methods 
+```cpp
+bool compare_exchange_weak( T& expected, T desired, std::memory_order success, std::memory_order failure ) noexcept;
+
+bool compare_exchange_strong( T& expected, T desired, std::memory_order success, std::memory_order failure ) noexcept;
+```
+
+Both methods are used to change the value of an atomic variable if its current value equals the `expected` argument.
+
+The difference between the strong and weak versions is that the weak version may fail spuriously (i.e., it may fail even if the current value equals the expected value), whereas the strong version will only fail if the current value does not equal the expected value.
+
+The weak version may fail spuriously because some operating systems do not directly support the `compare_exchange` operation. Instead, they use LL/SC (Load-Link/Store-Conditional) instructions, which are two separate operations. If any exceptional events, such as a [context switch](https://en.wikipedia.org/wiki/Context_switch), another load-link, or even another load or store operation, occur between these two instructions, the store-conditional can fail. Older implementations may fail if there are any updates broadcast over the memory bus.
+
+`compare_exchange_strong` is more expensive because it may be implemented with a loop using LL/SC instructions on such operating systems. This is why `compare_exchange_weak` is often preferred.
+
+#ref: https://en.wikipedia.org/wiki/Load-link/store-conditional
 # memory_order_relaxed
 ![[Pasted image 20240710004003.png]]
 With `memory_order_relaxed`, no memory fences are applied, allowing the compiler and CPU to reorder read/write instructions in any way that they believe will improve performance.
