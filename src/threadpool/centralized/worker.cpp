@@ -6,7 +6,7 @@
 namespace sam {
 namespace threadpool {
 namespace centralized {
-Worker::Worker(size_t id, std::shared_ptr<ICentralizedThreadpool> thread_pool) : IWorker(id, thread_pool) {}
+Worker::Worker(size_t id, std::shared_ptr<ICentralizedThreadpool> threadpool) : IWorker(id, threadpool) {}
 
 void Worker::operator()() {
   std::unique_lock<std::mutex> lock{thread_pool_->task_queue_mutex_};  // lock the task_queue

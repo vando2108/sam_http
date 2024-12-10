@@ -16,7 +16,7 @@
 #include "http/http_server.hpp"
 #include "socket/stream.hpp"
 #include "threadpool/base.hpp"
-#include "threadpool/centralized_threadpool.hpp"
+#include "threadpool/stealing_threadpool.hpp"
 
 std::mutex mutex;
 std::condition_variable condition_variable;
@@ -39,15 +39,7 @@ int main(int argc, char* argv[]) {
 
   sam::threadpool::Config config;
   config.minimum_thread = 10;
-  auto threadpool = sam::threadpool::centralized::CentralizedThreadpool::create(std::move(config));
-
-  auto task = []() {
-    LOG(INFO) << "Task is running";
-    return 42;
-  };
-
-  auto future = threadpool->submit_task(task);
-  LOG(INFO) << "Got the return value from thread_pool: " << future.get();
+  auto threadpool = sam::threadpool::stealing::StealingThreadpool::create(std::move(config));
 
   for (;;) {
     char buff[1024];
